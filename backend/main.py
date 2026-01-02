@@ -297,10 +297,11 @@ async def get_compatible_vehicles(order_id: int, db: AsyncSession = Depends(get_
                 # Found the zone. Get vehicles in this zone.
                 v_res = await db.execute(select(Vehicle).where(Vehicle.zone_id == z.id))
                 vehs = v_res.scalars().all()
+                
                 # Filter by capacity
                 for v in vehs:
                      if v.max_weight_kg >= order.weight_kg and v.max_volume_m3 >= order.volume_m3:
-                         compatible_vehicles.append(v)
+                          compatible_vehicles.append(v)
         except:
             continue
             
@@ -362,6 +363,104 @@ async def assign_order(
         status=order.status,
         assigned_vehicle_id=order.assigned_vehicle_id,
         assigned_vehicle_number=vehicle.vehicle_number,
+        latitude=lat,
+        longitude=lon
+    )
+
+@app.post("/orders/{order_id}/cancel", response_model=OrderResponse)
+async def cancel_order(
+    order_id: int, 
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Fetch Order
+    result = await db.execute(select(Order).where(Order.id == order_id))
+    order = result.scalars().first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Verify Ownership
+    if order.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to cancel this order")
+
+    # Check Status
+    if order.status != models.OrderStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Only pending orders can be cancelled")
+
+    # Update
+    order.status = models.OrderStatus.CANCELLED
+    
+    await db.commit()
+    await db.refresh(order)
+    
+    lat, lon = 0.0, 0.0
+    if order.pickup_location:
+         try:
+             lat, lon = map(float, order.pickup_location.split(','))
+         except:
+             pass
+
+    return OrderResponse(
+        id=order.id,
+        user_id=order.user_id,
+        item_name=order.item_name,
+        length_cm=order.length_cm,
+        width_cm=order.width_cm,
+        height_cm=order.height_cm,
+        weight_kg=order.weight_kg,
+        volume_m3=order.volume_m3,
+        status=order.status,
+        assigned_vehicle_id=order.assigned_vehicle_id,
+        assigned_vehicle_number=None,
+        latitude=lat,
+        longitude=lon
+    )
+
+@app.post("/orders/{order_id}/cancel", response_model=OrderResponse)
+async def cancel_order(
+    order_id: int, 
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Fetch Order
+    result = await db.execute(select(Order).where(Order.id == order_id))
+    order = result.scalars().first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Verify Ownership
+    if order.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to cancel this order")
+
+    # Check Status
+    if order.status != models.OrderStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Only pending orders can be cancelled")
+
+    # Update
+    order.status = models.OrderStatus.CANCELLED
+    
+    await db.commit()
+    await db.refresh(order)
+    
+    lat, lon = 0.0, 0.0
+    if order.pickup_location:
+         try:
+             lat, lon = map(float, order.pickup_location.split(','))
+         except:
+             pass
+
+    return OrderResponse(
+        id=order.id,
+        user_id=order.user_id,
+        item_name=order.item_name,
+        length_cm=order.length_cm,
+        width_cm=order.width_cm,
+        height_cm=order.height_cm,
+        weight_kg=order.weight_kg,
+        volume_m3=order.volume_m3,
+        status=order.status,
+        assigned_vehicle_id=order.assigned_vehicle_id,
+        assigned_vehicle_number=None,
         latitude=lat,
         longitude=lon
     )
@@ -447,6 +546,28 @@ async def read_zones(db: AsyncSession = Depends(get_db)):
         ) for z in zones
     ]
 
+@app.delete("/zones/{zone_id}")
+async def delete_zone(zone_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    # Verify Admin
+    if current_user.role != models.UserRole.SUPER_ADMIN:
+         raise HTTPException(status_code=403, detail="Only admins can delete zones")
+    
+    # Fetch Zone
+    result = await db.execute(select(Zone).where(Zone.id == zone_id))
+    zone = result.scalars().first()
+    if not zone:
+        raise HTTPException(status_code=404, detail="Zone not found")
+
+    # Check for assigned vehicles
+    v_res = await db.execute(select(Vehicle).where(Vehicle.zone_id == zone_id))
+    vehicles = v_res.scalars().all()
+    if vehicles:
+        raise HTTPException(status_code=400, detail=f"Cannot delete zone. It has {len(vehicles)} assigned vehicles.")
+    
+    await db.delete(zone)
+    await db.commit()
+    return {"message": "Zone deleted successfully"}
+
 # Vehicle Endpoints
 
 @app.post("/vehicles", response_model=VehicleResponse)
@@ -508,4 +629,29 @@ async def read_vehicles(db: AsyncSession = Depends(get_db)):
             current_volume_m3=0.0, 
             utilization_percentage=0.0
         ))
+
     return response
+
+@app.delete("/vehicles/{vehicle_id}")
+async def delete_vehicle(vehicle_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    # Verify Admin (Simplistic, leveraging current_user.role)
+    if current_user.role != models.UserRole.SUPER_ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can delete vehicles")
+
+    # Fetch Vehicle
+    result = await db.execute(select(Vehicle).where(Vehicle.id == vehicle_id))
+    vehicle = result.scalars().first()
+    if not vehicle:
+        raise HTTPException(status_code=404, detail="Vehicle not found")
+        
+    # Check for assigned orders
+    order_res = await db.execute(select(Order).where(Order.assigned_vehicle_id == vehicle.id))
+    assigned_orders = order_res.scalars().all()
+    
+    if assigned_orders:
+        raise HTTPException(status_code=400, detail=f"Cannot delete vehicle. It has {len(assigned_orders)} assigned orders. Please unassign first.")
+
+    await db.delete(vehicle)
+    await db.commit()
+    
+    return {"message": "Vehicle deleted successfully"}

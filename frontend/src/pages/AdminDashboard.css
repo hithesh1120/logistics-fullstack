@@ -347,6 +347,20 @@
 }
 
 .btn-unassign:hover {
-    background: #ef4444;
-    color: white;
+    background-color: #fee2e2;
+}
+
+.btn-icon-danger {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.btn-icon-danger:hover {
+    color: var(--error);
+    background-color: #fee2e2;
 }

@@ -72,7 +72,11 @@ export default function AdminDashboard() {
       {/* Page Header */}
       <div className="page-header">
         <div>
-            <h1 className="page-title">
+            <h1 
+                className="page-title" 
+                onClick={() => setActiveTab('fleet')}
+                style={{ cursor: 'pointer' }}
+            >
                 {activeTab === 'fleet' ? 'Fleet Capacity Monitor' : 'Service Zone Manager'}
             </h1>
             <p className="page-subtitle">
@@ -211,7 +215,7 @@ function FleetGrid({ vehicles, orders, onUpdate }) {
       const weightUtil = (currentWeight / v.max_weight_kg) * 100;
       const utilPct = Math.min(Math.max(volUtil, weightUtil), 100);
       
-      return { ...v, currentWeight, currentVol, utilPct };
+      return { ...v, currentWeight, currentVol, utilPct, volUtil, weightUtil };
   });
 
   const avgUtil = vehicleStats.length > 0 
@@ -257,21 +261,37 @@ function FleetGrid({ vehicles, orders, onUpdate }) {
             </div>
 
             {/* Utilization Bar */}
-            <div className="utilization-section">
-                <div className="utilization-header">
-                    <span style={{ color: 'var(--text-muted)' }}>Utilization</span>
-                    <span style={{ fontWeight: '700', color: v.utilPct > 90 ? 'var(--error)' : 'var(--success)' }}>
-                        {v.utilPct.toFixed(1)}%
-                    </span>
+            {/* Utilization Bars */}
+            <div className="utilization-section" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {/* Weight */}
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '2px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Weight</span>
+                        <span style={{ fontWeight: '600' }}>{v.weightUtil.toFixed(1)}%</span>
+                    </div>
+                    <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{ 
+                            width: `${Math.min(v.weightUtil, 100)}%`, 
+                            background: v.weightUtil > 90 ? 'var(--error)' : v.weightUtil > 70 ? '#f59e0b' : 'var(--success)',
+                            height: '100%',
+                            transition: 'width 0.3s ease, background-color 0.3s ease'
+                        }}></div>
+                    </div>
                 </div>
-                <div className="utilization-bar-bg">
-                    <div 
-                        className="utilization-bar-fill"
-                        style={{ 
-                            width: `${v.utilPct}%`, 
-                            background: v.utilPct > 90 ? 'var(--error)' : 'var(--success)'
-                        }}
-                    ></div>
+                {/* Volume */}
+                <div>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '2px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Volume</span>
+                        <span style={{ fontWeight: '600' }}>{v.volUtil.toFixed(1)}%</span>
+                    </div>
+                    <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{ 
+                            width: `${Math.min(v.volUtil, 100)}%`, 
+                            background: v.volUtil > 90 ? 'var(--error)' : v.volUtil > 70 ? '#f59e0b' : 'var(--success)', 
+                            height: '100%',
+                            transition: 'width 0.3s ease, background-color 0.3s ease'
+                         }}></div>
+                    </div>
                 </div>
             </div>
 
@@ -317,7 +337,7 @@ function VehicleDetailsModal({ vehicle, orders, onClose, onUpdate }) {
                     <button onClick={onClose} className="modal-close-btn">&times;</button>
                 </div>
 
-                <div className="modal-stats-row">
+                <div className="modal-stats-row" style={{ marginBottom: '1.5rem' }}>
                     <div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Load</div>
                         <div style={{ fontWeight: '600' }}>{orders.length} Orders</div>
@@ -325,10 +345,18 @@ function VehicleDetailsModal({ vehicle, orders, onClose, onUpdate }) {
                     <div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Weight</div>
                         <div style={{ fontWeight: '600' }}>{vehicle.currentWeight} / {vehicle.max_weight_kg} kg</div>
+                        <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '2px', marginTop: '4px', width: '100px' }}>
+                            <div style={{ width: `${Math.min(vehicle.weightUtil, 100)}%`, background: 'var(--primary)', height: '100%', borderRadius: '2px' }}></div>
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>{vehicle.weightUtil.toFixed(1)}%</div>
                     </div>
                     <div>
                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Volume</div>
-                        <div style={{ fontWeight: '600' }}>{vehicle.currentVol.toFixed(3)} / {vehicle.max_volume_m3} m³</div>
+                        <div style={{ fontWeight: '600' }}>{vehicle.currentVol < 0.001 ? vehicle.currentVol.toFixed(6) : vehicle.currentVol.toFixed(3)} / {vehicle.max_volume_m3} m³</div>
+                         <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '2px', marginTop: '4px', width: '100px' }}>
+                            <div style={{ width: `${Math.min(vehicle.volUtil, 100)}%`, background: 'var(--secondary)', height: '100%', borderRadius: '2px' }}></div>
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>{vehicle.volUtil.toFixed(1)}%</div>
                     </div>
                 </div>
 
@@ -368,7 +396,24 @@ function VehicleDetailsModal({ vehicle, orders, onClose, onUpdate }) {
                     </table>
                 )}
 
-                <div className="modal-actions" style={{ justifyContent: 'flex-end' }}>
+                <div className="modal-actions" style={{ justifyContent: 'space-between' }}>
+                    <button 
+                        onClick={async () => {
+                            if (!confirm("Are you sure you want to DELETE this vehicle?")) return;
+                            try {
+                                await axios.delete(`http://localhost:8000/vehicles/${vehicle.id}`);
+                                onClose(); // Close modal
+                                onUpdate(); // Refresh grid
+                            } catch (err) {
+                                console.error("Failed to delete", err);
+                                alert(err.response?.data?.detail || "Failed to delete vehicle");
+                            }
+                        }}
+                        className="btn" 
+                        style={{ color: 'var(--error)', borderColor: 'var(--border)' }}
+                    >
+                        Delete Vehicle
+                    </button>
                     <button onClick={onClose} className="btn" style={{ border: '1px solid var(--border)' }}>Close</button>
                 </div>
             </div>
@@ -511,9 +556,27 @@ function ZoneManager() {
             <h3 style={{ marginBottom: '1rem', fontWeight: 'bold' }}>Active Zones</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {zones.map(z => (
-                    <div key={z.id} style={{ padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '0.5rem' }}>
-                        <div style={{ fontWeight: '600' }}>{z.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {z.id}</div>
+                    <div key={z.id} style={{ padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <div style={{ fontWeight: '600' }}>{z.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {z.id}</div>
+                        </div>
+                        <button 
+                            className="btn-icon-danger"
+                            title="Delete Zone"
+                            onClick={async () => {
+                                if (!confirm(`Delete zone "${z.name}"?`)) return;
+                                try {
+                                    await axios.delete(`http://localhost:8000/zones/${z.id}`);
+                                    setZones(prev => prev.filter(item => item.id !== z.id));
+                                } catch (err) {
+                                    console.error("Delete failed", err);
+                                    alert(err.response?.data?.detail || "Failed to delete zone");
+                                }
+                            }}
+                        >
+                            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
                     </div>
                 ))}
                 {zones.length === 0 && <div style={{ color: 'var(--text-muted)' }}>No zones created yet. Draw on map.</div>}
@@ -548,10 +611,11 @@ function OrderManager({ orders, onUpdate }) {
                         <td style={{ padding: '1rem', fontWeight: '500' }}>#{o.id}</td>
                         <td style={{ padding: '1rem' }}>{o.item_name}</td>
                         <td style={{ padding: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                            {o.weight_kg}kg <br/> {o.volume_m3.toFixed(3)}m³
+                            {o.weight_kg}kg <br/> {o.volume_m3 < 0.001 ? o.volume_m3.toFixed(6) : o.volume_m3.toFixed(3)}m³
                         </td>
                         <td style={{ padding: '1rem' }}>
-                            <span className={`badge ${o.status === 'ASSIGNED' ? 'badge-success' : 'badge-warning'}`}>
+                            <span className={`badge ${
+                                o.status === 'SHIPPED' ? 'badge-success' : 'badge-warning'}`}>
                                 {o.status}
                             </span>
                         </td>
@@ -561,10 +625,20 @@ function OrderManager({ orders, onUpdate }) {
                         <td style={{ padding: '1rem', textAlign: 'right' }}>
                             {o.status === 'PENDING' && (
                                 <button 
-                                    className="btn-sm btn-primary"
+                                    className="btn-sm"
+                                    style={{ 
+                                        background: 'var(--primary)', 
+                                        color: 'white', 
+                                        padding: '0.4rem 0.8rem', 
+                                        borderRadius: '0.25rem',
+                                        fontSize: '0.75rem',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                    }}
                                     onClick={() => setSelectedOrder(o)}
                                 >
-                                    Assign
+                                    Assign Vehicle
                                 </button>
                             )}
                         </td>

@@ -114,10 +114,50 @@ function ShipmentTable({ orders }) {
                             <td className="shipment-td">
                                 <span className={`badge ${
                                     o.status === 'SHIPPED' ? 'badge-success' : 
-                                    o.status === 'ASSIGNED' ? 'badge-warning' : 'badge-neutral'
+                                    o.status === 'ASSIGNED' ? 'badge-success' : 
+                                    o.status === 'CANCELLED' ? 'badge-muted' : 'badge-neutral'
                                 }`}>
                                     {o.status}
                                 </span>
+                                {o.status === 'PENDING' && (
+                                    <button 
+                                        style={{ 
+                                            marginLeft: '1rem', 
+                                            padding: '0.25rem 0.5rem',
+                                            fontSize: '0.7rem', 
+                                            cursor: 'pointer', 
+                                            border: '1px solid var(--error)', 
+                                            background: '#fff0f0', 
+                                            color: 'var(--error)',
+                                            borderRadius: '4px',
+                                            fontWeight: '600'
+                                        }}
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            if (!confirm("Cancel this order?")) return;
+                                            try {
+                                                await axios.post(`http://localhost:8000/orders/${o.id}/cancel`);
+                                                // Assuming parent refreshes via prop or context? 
+                                                // Wait, MSMEPortal passes orders list, but ShipmentTable doesn't have refresh callback.
+                                                // I need to add onUpdate prop to ShipmentTable request header? 
+                                                // Or simpler: force reload or lift state. 
+                                                // I'll reload window for quick fix or pass callback. 
+                                                // Let's pass callback. Wait, I can't easily change prop signature in this single replace call if I don't see parent.
+                                                // I see parent in previous `view_file`. MSMEPortal passes `orders={orders}`.
+                                                // I'll assume window.location.reload() for now or assume simple callback later.
+                                                // Actually, let's use window.location.reload() as fallback or try to call a prop that might not exist? No.
+                                                // I will just alert for now? No user wants functionality.
+                                                // I will verify if I can change parent in next step.
+                                                // Actually I see `ShipmentTable({ orders })` signature in line 90.
+                                                window.location.reload(); 
+                                            } catch (err) {
+                                                alert("Failed to cancel");
+                                            }
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
                             </td>
                         </tr>
                     ))}
@@ -134,9 +174,13 @@ function NewShipmentModal({ onClose, onSuccess }) {
     const [dims, setDims] = useState({ l: '', w: '', h: '' });
     const [loading, setLoading] = useState(false);
     
-    const volume = (dims.l && dims.w && dims.h) 
-        ? ((dims.l * dims.w * dims.h) / 1000000).toFixed(4) 
-        : '0.00';
+    const calcVolume = (dims.l && dims.w && dims.h) 
+        ? ((dims.l * dims.w * dims.h) / 1000000)
+        : 0;
+
+    const volumeDisplay = calcVolume === 0 ? '0.00' :
+                         calcVolume < 0.001 ? calcVolume.toFixed(6) :
+                         calcVolume.toFixed(4);
 
     const handleCreate = async () => {
         if (!itemName || !weight || !dims.l || !dims.w || !dims.h || !pickupLocation) {
@@ -238,7 +282,7 @@ function NewShipmentModal({ onClose, onSuccess }) {
                         <div>
                             <div className="volume-text-label">Calculated Volume</div>
                             <div className="volume-value">
-                                {volume} m³
+                                {volumeDisplay} m³
                             </div>
                         </div>
                     </div>
