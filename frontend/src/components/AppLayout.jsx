@@ -15,20 +15,7 @@ export default function AppLayout({ children }) {
 
   const isActive = (path) => location.pathname === path;
 
-  // Determine Sidebar Links based on Role
-  const links = user?.role === 'SUPER_ADMIN' 
-    ? [
-        { label: 'Fleet Monitor', path: '/admin' },
-        { label: 'Zone Manager', path: '/admin/zones' }, // We might need to handle sub-routing or keep query params
-        { label: 'Settings', path: '/admin/settings' },
-      ]
-    : [
-        { label: 'Dashboard', path: '/msme' },
-        { label: 'Shipments', path: '/msme/shipments' },
-        { label: 'Settings', path: '/msme/settings' },
-      ];
-  
-  // Or we can fully move tabs to routes later. For this step, let's just make the sidebar look good.
+  const basePath = user?.role === 'SUPER_ADMIN' ? '/admin' : '/msme';
   
   return (
     <div className="app-layout">
@@ -60,18 +47,16 @@ export default function AppLayout({ children }) {
             </div>
             <ul className="nav-list">
                 <li>
-                    <Link to={user?.role === 'SUPER_ADMIN' ? '/admin' : '/msme'} className={`nav-link ${isActive(user?.role === 'SUPER_ADMIN' ? '/admin' : '/msme') ? 'active' : ''}`}>
+                    <Link to={basePath} className={`nav-link ${isActive(basePath) ? 'active' : ''}`}>
                         <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                         Dashboard
                     </Link>
                 </li>
-                {/* Mock Links for visuals */}
-                {/* Shipments link removed as per request */}
-                 <li>
-                     <a href="#" className="nav-link nav-link-muted">
+                <li>
+                    <Link to={`${basePath}/settings`} className={`nav-link ${isActive(`${basePath}/settings`) ? 'active' : ''}`}>
                         <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         Settings
-                     </a>
+                    </Link>
                 </li>
             </ul>
         </nav>

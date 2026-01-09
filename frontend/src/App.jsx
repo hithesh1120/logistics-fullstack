@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import AdminDashboard from './pages/AdminDashboard';
 import MSMEPortal from './pages/MSMEPortal';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
+import Settings from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/AppLayout';
 
@@ -16,6 +16,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Login />} />
           
+          {/* Admin Routes */}
           <Route path="/admin" element={
             <ProtectedRoute role="SUPER_ADMIN">
               <AppLayout>
@@ -24,6 +25,15 @@ function App() {
             </ProtectedRoute>
           } />
           
+          <Route path="/admin/settings" element={
+            <ProtectedRoute role="SUPER_ADMIN">
+              <AppLayout>
+                <Settings />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          
+          {/* MSME Routes */}
           <Route path="/msme" element={
             <ProtectedRoute role="MSME">
               <AppLayout>
@@ -32,6 +42,15 @@ function App() {
             </ProtectedRoute>
           } />
           
+          <Route path="/msme/settings" element={
+            <ProtectedRoute role="MSME">
+              <AppLayout>
+                <Settings />
+              </AppLayout>
+            </ProtectedRoute>
+          } />
+          
+          {/* Default Route */}
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>

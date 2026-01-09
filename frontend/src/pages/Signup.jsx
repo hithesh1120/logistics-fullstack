@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LocationPickerMap from '../components/LocationPickerMap';
 import AuthLayout from '../components/AuthLayout';
@@ -26,6 +26,10 @@ export default function Signup() {
   const handleNext = (e) => {
       e.preventDefault();
       if (step === 1) {
+          if (!formData.password || formData.password.length < 8) {
+              setError("Password must be at least 8 characters");
+              return;
+          }
           if (formData.password !== formData.confirmPassword) {
               setError("Passwords do not match");
               return;
@@ -35,26 +39,35 @@ export default function Signup() {
       setStep(s => s + 1);
   };
 
-  const handleBack = () => setStep(s => s - 1);
+  const handleBack = () => {
+    setStep(s => s - 1);
+    setError(null);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
+    if (!formData.latitude || !formData.longitude) {
+      setError("Please select a location on the map");
+      return;
+    }
+
     setLoading(true);
 
     try {
       await signupMSME({
         email: formData.email,
         password: formData.password,
-        company_name: formData.companyName,
-        gst_number: formData.gstNumber,
-        address: formData.address, // We might want to append lat/lng here if needed
-        latitude: formData.latitude,
-        longitude: formData.longitude,
+        companyName: formData.companyName,
+        gstNumber: formData.gstNumber,
+        address: formData.address
       });
+      
+      // signupMSME now auto-logs in
       navigate('/msme');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Signup failed');
+      setError(err.response?.data?.detail || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -93,7 +106,7 @@ export default function Signup() {
         {step === 1 && (
             <div className="space-y-4">
                 <div className="form-group">
-                    <label className="form-label">Company Name</label>
+                    <label className="form-label">Company Name *</label>
                     <input 
                         required 
                         className="form-input" 
@@ -105,7 +118,7 @@ export default function Signup() {
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div className="form-group">
-                        <label className="form-label">GST Number</label>
+                        <label className="form-label">GST Number *</label>
                         <input 
                             required 
                             className="form-input" 
@@ -115,24 +128,26 @@ export default function Signup() {
                         />
                     </div>
                     <div className="form-group">
-                        <label className="form-label">Industry</label>
+                        <label className="form-label">Industry *</label>
                         <select 
                             required
                             className="form-input" 
                             value={formData.industry}
                             onChange={(e) => setFormData({...formData, industry: e.target.value})}
                         >
-                            <option value="" disabled>Select Industry</option>
+                            <option value="">Select Industry</option>
                             <option value="manufacturing">Manufacturing</option>
                             <option value="textiles">Textiles</option>
                             <option value="electronics">Electronics</option>
+                            <option value="fmcg">FMCG</option>
+                            <option value="automotive">Automotive</option>
                             <option value="other">Other</option>
                         </select>
                     </div>
                 </div>
 
                 <div className="form-group">
-                    <label className="form-label">Official Email</label>
+                    <label className="form-label">Official Email *</label>
                     <div style={{ position: 'relative' }}>
                         <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
@@ -151,7 +166,7 @@ export default function Signup() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div className="form-group">
-                        <label className="form-label">Password</label>
+                        <label className="form-label">Password *</label>
                         <div style={{ position: 'relative' }}>
                             <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -162,6 +177,7 @@ export default function Signup() {
                                 className="form-input" 
                                 placeholder="Min 8 characters" 
                                 style={{ paddingLeft: '40px' }}
+                                minLength="8"
                                 value={formData.password}
                                 onChange={(e) => setFormData({...formData, password: e.target.value})}
                             />
@@ -169,7 +185,7 @@ export default function Signup() {
                     </div>
                     
                     <div className="form-group">
-                        <label className="form-label">Confirm Password</label>
+                        <label className="form-label">Confirm Password *</label>
                         <div style={{ position: 'relative' }}>
                             <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -193,18 +209,18 @@ export default function Signup() {
         {step === 2 && (
             <div className="space-y-4">
                 <div className="form-group">
-                    <label className="form-label">Registered Address</label>
+                    <label className="form-label">Registered Address *</label>
                     <textarea 
                         required 
                         className="form-input" 
-                        rows="2" 
-                        placeholder="Plot No, Street, Area, City, State, Zip"
+                        rows="3" 
+                        placeholder="Plot No, Street, Area, City, State, PIN Code"
                         value={formData.address}
                         onChange={(e) => setFormData({...formData, address: e.target.value})}
                     />
                 </div>
                 <div className="form-group">
-                    <label className="form-label">Pin Location on Map</label>
+                    <label className="form-label">Pin Location on Map *</label>
                     <div style={{ height: '300px', borderRadius: '0.75rem', overflow: 'hidden', border: '1px solid var(--border)' }}>
                         <LocationPickerMap onLocationSelect={(loc) => setFormData({...formData, latitude: loc.lat, longitude: loc.lng})} />
                     </div>
@@ -226,7 +242,7 @@ export default function Signup() {
                 className="btn btn-primary" 
                 style={{ width: '100%', padding: '0.875rem', fontSize: '1rem' }}
             >
-                {loading ? 'Creating Account...' : step === 2 ? 'Create Account' : 'Continue to Next Step'} &rarr;
+                {loading ? 'Creating Account...' : step === 2 ? 'Create Account' : 'Continue to Next Step'} →
             </button>
             
             {step > 1 && (
@@ -234,15 +250,12 @@ export default function Signup() {
                     type="button"
                     onClick={handleBack}
                     className="btn"
-                    style={{ width: '100%', marginTop: '0.5rem', color: 'var(--text-muted)' }}
+                    style={{ width: '100%', marginTop: '0.5rem', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
                 >
-                    Back to previous step
+                    ← Back to previous step
                 </button>
             )}
         </div>
-        
-
-
       </form>
     </AuthLayout>
   );

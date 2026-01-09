@@ -86,26 +86,28 @@ export default function Login() {
 
   const handleSignupBack = () => setSignupStep(s => s - 1);
 
-  const handleSignupSubmit = async (e) => {
+const handleSignupSubmit = async (e) => {
     e.preventDefault();
     setSignupError(null);
+
+    // Validation
+    if (!signupForm.latitude || !signupForm.longitude) {
+      setSignupError("Please select a location on the map");
+      return;
+    }
+
     setSignupLoading(true);
 
     try {
       await signupMSME({
         email: signupForm.email,
         password: signupForm.password,
-        company_name: signupForm.companyName,
-        gst_number: signupForm.gstNumber,
-        address: signupForm.address,
-        latitude: signupForm.latitude,
-        longitude: signupForm.longitude,
+        companyName: signupForm.companyName,
+        gstNumber: signupForm.gstNumber,
+        address: signupForm.address
       });
-      // On success, maybe switch to login or redirect?
-      // navigate('/msme'); // Direct access
       
-      // OR: Auto-login after signup?
-      // For now, let's redirect to MSME portal similar to before
+      // signupMSME now auto-logs in, so navigate to MSME
       navigate('/msme');
 
     } catch (err) {

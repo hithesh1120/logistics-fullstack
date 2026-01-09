@@ -42,9 +42,6 @@ export const AuthProvider = ({ children }) => {
         const { access_token } = res.data;
         
         localStorage.setItem('token', access_token);
-        // We need to decode token or fetch user to get role. 
-        // For simplicity, let's assume we decode or backend returns it.
-        // But backend only returns token. Let's fetch /users/me
         setToken(access_token);
         
         // Fetch user role immediately
@@ -55,29 +52,35 @@ export const AuthProvider = ({ children }) => {
         const userData = userRes.data;
         localStorage.setItem('role', userData.role);
         setUser(userData);
-        return userData.role; // Return role for redirect logic
+        return userData.role;
     } catch (err) {
         console.error("Login failed", err);
         throw err;
     }
   };
 
-  const signupMSME = async (companyData, userData) => {
+  const signupMSME = async (formData) => {
     try {
+        // Create properly structured payload matching backend schema
         const payload = {
             user_details: {
-                email: userData.email,
-                password: userData.password,
+                email: formData.email,
+                password: formData.password,
                 role: "MSME"
             },
             company_details: {
-                name: companyData.companyName,
-                gst_number: companyData.gstNumber,
-                address: companyData.address
+                name: formData.companyName,
+                gst_number: formData.gstNumber,
+                address: formData.address
             }
         };
-        await axios.post('http://localhost:8000/signup/msme', payload);
-        return true;
+        
+        const response = await axios.post('http://localhost:8000/signup/msme', payload);
+        
+        // Auto-login after successful signup
+        await login(formData.email, formData.password);
+        
+        return response.data;
     } catch (err) {
         console.error("Signup failed", err);
         throw err;
@@ -88,10 +91,11 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     localStorage.clear();
+    delete axios.defaults.headers.common['Authorization'];
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, signupMSME, logout }}>
+    <AuthContext.Provider value={{ user, token, login, signupMSME, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -11,23 +11,6 @@ class TokenData(BaseModel):
     email: Optional[str] = None
     role: Optional[UserRole] = None
 
-# User Schemas
-class UserBase(BaseModel):
-    email: EmailStr
-    role: UserRole = UserRole.MSME
-
-class UserCreate(UserBase):
-    password: str
-    company_id: Optional[int] = None
-
-class UserResponse(UserBase):
-    id: int
-    company_id: Optional[int] = None
-    company: Optional['CompanyResponse'] = None
-    
-    class Config:
-        from_attributes = True
-
 # Company Schemas
 class CompanyBase(BaseModel):
     name: str
@@ -43,11 +26,41 @@ class CompanyResponse(CompanyBase):
     class Config:
         from_attributes = True
 
-# Vehicle Schemas
+# User Schemas
+class UserBase(BaseModel):
+    email: EmailStr
+    role: UserRole = UserRole.MSME
+
+class UserCreate(UserBase):
+    password: str
+    company_id: Optional[int] = None
+
+class UserResponse(UserBase):
+    id: int
+    company_id: Optional[int] = None
+    company: Optional[CompanyResponse] = None
+    
+    class Config:
+        from_attributes = True
+
+# NEW: Nested Signup Schema
+class SignupUserDetails(BaseModel):
+    email: EmailStr
+    password: str
+    role: UserRole = UserRole.MSME
+
+class SignupCompanyDetails(BaseModel):
+    name: str
+    gst_number: str
+    address: str
+
+class SignupMSMEPayload(BaseModel):
+    user_details: SignupUserDetails
+    company_details: SignupCompanyDetails
+
 # Zone Schemas
 class ZoneBase(BaseModel):
     name: str
-    # Expecting list of lat/lng objects or list of lists for GeoJSON
     coordinates: List[Any] 
 
 class ZoneCreate(ZoneBase):
@@ -85,7 +98,6 @@ class OrderBase(BaseModel):
     width_cm: float
     height_cm: float
     weight_kg: float
-    # pickup_location as lat/lon dict?
     latitude: float
     longitude: float
 
@@ -105,3 +117,14 @@ class OrderResponse(OrderBase):
 
 class AssignOrderRequest(BaseModel):
     vehicle_id: int
+
+# NEW: Settings Update Schema
+class UserSettingsUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    current_password: Optional[str] = None
+    new_password: Optional[str] = None
+
+class CompanySettingsUpdate(BaseModel):
+    name: Optional[str] = None
+    gst_number: Optional[str] = None
+    address: Optional[str] = None

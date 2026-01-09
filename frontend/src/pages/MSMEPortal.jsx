@@ -87,7 +87,7 @@ export default function MSMEPortal() {
   );
 }
 
-function ShipmentTable({ orders }) {
+function ShipmentTable({ orders, onUpdate }) {
     if (orders.length === 0) {
         return <div className="card" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No orders found. Create your first shipment!</div>;
     }
