@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Any
-from models import UserRole, OrderStatus
+from models import UserRole, OrderStatus, UserStatus
 
 # Auth Schemas
 class Token(BaseModel):
@@ -11,6 +11,28 @@ class TokenData(BaseModel):
     email: Optional[str] = None
     role: Optional[UserRole] = None
 
+# Saved Address Schemas
+class SavedAddressBase(BaseModel):
+    label: str
+    recipient_name: str
+    mobile_number: str
+    address_line1: str
+    pincode: str
+    city: str
+    state: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+class SavedAddressCreate(SavedAddressBase):
+    pass
+
+class SavedAddressResponse(SavedAddressBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
 # User Schemas
 class UserBase(BaseModel):
     email: EmailStr
@@ -18,15 +40,28 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    name: Optional[str] = None
     company_id: Optional[int] = None
 
 class UserResponse(UserBase):
     id: int
+    name: Optional[str] = None
+    status: UserStatus = UserStatus.APPROVED
     company_id: Optional[int] = None
     company: Optional['CompanyResponse'] = None
+    phone_number: Optional[str] = None
+    license_number: Optional[str] = None
     
     class Config:
         from_attributes = True
+
+# Driver Signup Schema
+class DriverSignupRequest(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    phone_number: str
+    license_number: str
 
 # Company Schemas
 class CompanyBase(BaseModel):
@@ -88,20 +123,34 @@ class OrderBase(BaseModel):
     # pickup_location as lat/lon dict?
     latitude: float
     longitude: float
+    drop_latitude: Optional[float] = None
+    drop_longitude: Optional[float] = None
+    
+    pickup_address: Optional[str] = None
+    drop_address: Optional[str] = None
 
 class OrderCreate(OrderBase):
-    pass
+    trip_id: Optional[int] = None
 
 class OrderResponse(OrderBase):
     id: int
     user_id: int
     status: OrderStatus
     volume_m3: float
+    trip_id: Optional[int] = None
     assigned_vehicle_id: Optional[int] = None
     assigned_vehicle_number: Optional[str] = None
+    drop_latitude: Optional[float] = None
+    drop_longitude: Optional[float] = None
+    
+    pickup_address: Optional[str] = None
+    drop_address: Optional[str] = None
     
     class Config:
         from_attributes = True
 
 class AssignOrderRequest(BaseModel):
     vehicle_id: int
+
+class OrderStatusUpdate(BaseModel):
+    status: OrderStatus

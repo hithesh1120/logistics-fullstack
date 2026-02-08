@@ -1,0 +1,369 @@
+/* Landing Page Styles */
+.landing-page {
+    font-family: 'Inter', sans-serif;
+    color: #1e293b;
+    background-color: #fff;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Header */
+.landing-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #4f46e5;
+}
+
+.logo-icon {
+    width: 2rem;
+    height: 2rem;
+    background-color: #4f46e5;
+    color: white;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.nav-links {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .nav-links {
+        display: flex;
+        gap: 2rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #475569;
+    }
+}
+
+.nav-links a:hover {
+    color: #4f46e5;
+}
+
+.auth-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-login {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #475569;
+}
+
+.btn-login:hover {
+    color: #4f46e5;
+}
+
+.btn-get-started {
+    padding: 0.5rem 1rem;
+    background-color: #4f46e5;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -1px rgba(79, 70, 229, 0.06);
+    transition: background-color 0.2s;
+}
+
+.btn-get-started:hover {
+    background-color: #4338ca;
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    padding: 5rem 0 8rem;
+    background: radial-gradient(ellipse at top right, #eef2ff, #fff, #fff);
+    text-align: center;
+}
+
+.hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background-color: #eef2ff;
+    color: #4f46e5;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    border: 1px solid #e0e7ff;
+    margin-bottom: 1.5rem;
+}
+
+.pulse-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: #4f46e5;
+    border-radius: 50%;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+
+.hero-title {
+    font-size: 3rem;
+    line-height: 1.2;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .hero-title {
+        font-size: 4.5rem;
+    }
+}
+
+.hero-gradient-text {
+    background: linear-gradient(to right, #4f46e5, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-description {
+    font-size: 1.25rem;
+    color: #475569;
+    max-width: 42rem;
+    margin: 0 auto 2.5rem;
+    line-height: 1.6;
+}
+
+.hero-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .hero-actions {
+        flex-direction: row;
+    }
+}
+
+.btn-hero-primary {
+    padding: 1rem 2rem;
+    background-color: #4f46e5;
+    color: white;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.btn-hero-primary:hover {
+    background-color: #4338ca;
+}
+
+.btn-hero-secondary {
+    padding: 1rem 2rem;
+    background-color: white;
+    color: #334155;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.btn-hero-secondary:hover {
+    background-color: #f8fafc;
+}
+
+/* Features Section */
+.features-section {
+    padding: 6rem 0;
+    background-color: #fff;
+}
+
+.features-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+}
+
+@media (min-width: 768px) {
+    .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.feature-card {
+    padding: 2rem;
+    background-color: #f8fafc;
+    border-radius: 1rem;
+    border: 1px solid #f1f5f9;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    background-color: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.icon-blue { background-color: #e0e7ff; color: #4f46e5; }
+.icon-green { background-color: #dcfce7; color: #059669; }
+.icon-purple { background-color: #ede9fe; color: #7c3aed; }
+
+.feature-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #0f172a;
+}
+
+.feature-desc {
+    color: #475569;
+    line-height: 1.6;
+}
+
+/* Roles Section */
+.roles-section {
+    padding: 6rem 0;
+    background-color: #0f172a;
+    color: white;
+}
+
+.roles-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.roles-header {
+    text-center;
+    margin-bottom: 4rem;
+}
+
+.roles-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.roles-subtitle {
+    color: #94a3b8;
+    max-width: 40rem;
+    margin: 0 auto;
+}
+
+.roles-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 56rem;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .roles-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.role-card {
+    background-color: #1e293b;
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid #334155;
+    transition: border-color 0.2s;
+}
+
+.role-card:hover {
+    border-color: #475569;
+}
+
+.role-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.role-card-desc {
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+}
+
+.role-link {
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s;
+}
+
+.link-business { color: #818cf8; }
+.link-business:hover { color: #a5b4fc; }
+
+.link-driver { color: #34d399; }
+.link-driver:hover { color: #6ee7b7; }
+
+/* Footer */
+.footer {
+    padding: 3rem 0;
+    background-color: white;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+    color: #64748b;
+    font-size: 0.875rem;
+}

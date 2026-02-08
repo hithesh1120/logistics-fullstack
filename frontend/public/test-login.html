@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Test</title>
+</head>
+<body>
+    <h1>Direct Login Test</h1>
+    <form id="loginForm">
+        <div>
+            <label>Email: <input type="email" id="email" value="admin@logisoft.com"></label>
+        </div>
+        <div>
+            <label>Password: <input type="password" id="password" value="admin123"></label>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const params = new URLSearchParams();
+                params.append('username', email);
+                params.append('password', password);
+
+                console.log('Sending request to: http://127.0.0.1:8000/token');
+                console.log('Params:', params.toString());
+
+                const response = await fetch('http://127.0.0.1:8000/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params
+                });
+
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `<pre style="color: green;">SUCCESS!\n${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<pre style="color: red;">FAILED!\nStatus: ${response.status}\n${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<pre style="color: red;">ERROR!\n${error.message}\n${error.stack}</pre>`;
+            }
+        });
+    </script>
+</body>
+</html>

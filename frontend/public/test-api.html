@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>API Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .test-result {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Backend API Connection Test</h1>
+    <p>This page tests if the frontend can connect to the backend API.</p>
+
+    <button onclick="runTests()">Run Tests</button>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+
+        async function runTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Running tests...</p>';
+
+            const tests = [
+                {
+                    name: 'Test 1: GET / (Root endpoint)',
+                    url: `${API_BASE_URL}/`,
+                    method: 'GET'
+                },
+                {
+                    name: 'Test 2: GET /zones',
+                    url: `${API_BASE_URL}/zones`,
+                    method: 'GET'
+                },
+                {
+                    name: 'Test 3: GET /vehicles',
+                    url: `${API_BASE_URL}/vehicles`,
+                    method: 'GET'
+                },
+                {
+                    name: 'Test 4: POST /token (Login with wrong credentials)',
+                    url: `${API_BASE_URL}/token`,
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        username: 'test@test.com',
+                        password: 'wrongpassword'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            ];
+
+            resultsDiv.innerHTML = '';
+
+            for (const test of tests) {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'test-result';
+
+                try {
+                    const options = {
+                        method: test.method,
+                        headers: test.headers || {}
+                    };
+
+                    if (test.body) {
+                        options.body = test.body;
+                    }
+
+                    const response = await fetch(test.url, options);
+                    const data = await response.json().catch(() => response.text());
+
+                    resultDiv.className += ' success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ ${test.name}</h3>
+                        <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                        <p><strong>Response:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } catch (error) {
+                    resultDiv.className += ' error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ ${test.name}</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Error Type:</strong> ${error.name}</p>
+                        <p><strong>Details:</strong> ${error.toString()}</p>
+                    `;
+                }
+
+                resultsDiv.appendChild(resultDiv);
+            }
+        }
+    </script>
+</body>
+
+</html>
